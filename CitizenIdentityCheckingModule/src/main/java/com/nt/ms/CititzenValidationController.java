@@ -11,18 +11,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/validate")
 public class CititzenValidationController {
 
-	@GetMapping("/citizen/{id}")
-	public ResponseEntity<String> getStateByIdValue(@PathVariable Long id) {
+	@GetMapping("/citizen/{idNo}")
+	public ResponseEntity<String> getStateByIdValue(@PathVariable Long idNo) {
 
 		// dummy module to check whether the citizen is valid or not
 
-		if (String.valueOf(id).length() != 12)
+		if (String.valueOf(idNo).length() != 12)
 			return new ResponseEntity<String>("invalid id value", HttpStatus.BAD_REQUEST);
 
 		// get state name
 
 		String stateName = null;
-		int stateCode = (int) (id % 100);
+		int stateCode = (int) (idNo % 100);
 		if (stateCode == 01)
 			stateName = "kerala";
 		else if (stateCode == 02)

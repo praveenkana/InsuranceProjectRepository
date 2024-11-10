@@ -29,6 +29,7 @@ public class AppRegistrationEntity {
 	private Integer appId;
 	@Column(length = 40)
 	private String fullName;
+	public Long idNo;
 	@Column(length = 40)
 	private String emal;
 	@Column(length = 1)
@@ -38,7 +39,7 @@ public class AppRegistrationEntity {
 	private String bankName;
 	@Column(length = 30)
 	private String branchName;
-	@Column(length = 20)
+	@Column(length = 30)
 	private String IFSC;
 	private Long AccountNo;
 	@Column(length = 30)
