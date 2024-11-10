@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.nt.bindings.EligibilityDetailsOutput;
 import com.nt.entity.AppRegistrationEntity;
+import com.nt.entity.CorrespondenceEntity;
 import com.nt.entity.DC_CaseEntity;
 import com.nt.entity.DC_ChildrenEntity;
 import com.nt.entity.DC_EducationEntity;
@@ -19,6 +20,7 @@ import com.nt.entity.DC_IncomeEntity;
 import com.nt.entity.EligibilityDetailsEntity;
 import com.nt.entity.PlanEntity;
 import com.nt.repository.IAppRegistrationRepository;
+import com.nt.repository.IComnRepository;
 import com.nt.repository.IDCCaseRepository;
 import com.nt.repository.IDCIncomeRepository;
 import com.nt.repository.IDC_ChildrenRepository;
@@ -43,11 +45,14 @@ public class EligibilityDeterminationServiceImpl implements IEligibilityDetermin
 	private IDC_EducationRepository edrepo;
 	@Autowired
 	private IEligibilityDeterminationRepository elgirepo;
+	@Autowired
+	private IComnRepository cmrepo;
 
 	Integer appId = null;
 	Integer planId = null;
 	String planName = null;
 	Integer age=null;
+	String citizenName=null;
 	@Override
 	public EligibilityDetailsOutput determineEligibility(Integer caseNo) {
 
@@ -67,13 +72,22 @@ public class EligibilityDeterminationServiceImpl implements IEligibilityDetermin
 		if(opt3.isPresent()) {
 			AppRegistrationEntity entity = opt3.get();
 			LocalDate dob = entity.getDob();
+			citizenName = entity.getFullName();
 			age=Period.between(LocalDate.now(), dob).getYears();
 		}
 		
 		EligibilityDetailsOutput elgiout=appyPlanConditions(caseNo, planName,age);
+		elgiout.setHolderName(citizenName);
 		EligibilityDetailsEntity entity=new EligibilityDetailsEntity();
 		BeanUtils.copyProperties( elgiout,entity);
 		elgirepo.save(entity);
+		
+		
+		CorrespondenceEntity centity=new CorrespondenceEntity();
+		centity.setCaseNo(caseNo);
+		centity.setComnStatus("pending");
+		cmrepo.save(centity);
+		
 		return elgiout;
 	}
 

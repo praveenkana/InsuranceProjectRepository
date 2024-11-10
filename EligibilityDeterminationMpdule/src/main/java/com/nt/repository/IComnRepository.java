@@ -2,8 +2,9 @@ package com.nt.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.nt.entity.CommunicationEntity;
 
-public interface IComnRepository extends JpaRepository<CommunicationEntity, Integer> {
+import com.nt.entity.CorrespondenceEntity;
+
+public interface IComnRepository extends JpaRepository<CorrespondenceEntity, Integer> {
 
 }
