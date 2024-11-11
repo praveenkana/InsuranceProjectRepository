@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class CorrespondenceEntity {
+public class CmnEntity {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Integer comnId;

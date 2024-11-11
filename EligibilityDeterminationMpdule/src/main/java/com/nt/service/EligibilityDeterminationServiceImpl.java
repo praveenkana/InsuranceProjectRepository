@@ -1,18 +1,15 @@
 package com.nt.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.nt.bindings.EligibilityDetailsOutput;
 import com.nt.entity.AppRegistrationEntity;
-import com.nt.entity.CorrespondenceEntity;
+import com.nt.entity.CmnEntity;
 import com.nt.entity.DC_CaseEntity;
 import com.nt.entity.DC_ChildrenEntity;
 import com.nt.entity.DC_EducationEntity;
@@ -39,7 +36,7 @@ public class EligibilityDeterminationServiceImpl implements IEligibilityDetermin
 	private IDCIncomeRepository incomerepo;
 	@Autowired
 	private IDC_ChildrenRepository childrepo;
-	@Autowired 
+	@Autowired
 	private IAppRegistrationRepository apprepo;
 	@Autowired
 	private IDC_EducationRepository edrepo;
@@ -51,8 +48,9 @@ public class EligibilityDeterminationServiceImpl implements IEligibilityDetermin
 	Integer appId = null;
 	Integer planId = null;
 	String planName = null;
-	Integer age=null;
-	String citizenName=null;
+	Integer age = null;
+	String citizenName = null;
+
 	@Override
 	public EligibilityDetailsOutput determineEligibility(Integer caseNo) {
 
@@ -62,38 +60,37 @@ public class EligibilityDeterminationServiceImpl implements IEligibilityDetermin
 			appId = caseEntity.getAppId();
 			planId = caseEntity.getPlanId();
 		}
-		//get plan name
+		// get plan name
 		Optional<PlanEntity> opt1 = planrepo.findById(planId);
 		PlanEntity planEntity = opt1.get();
 		planName = planEntity.getPlanName();
-		
-		//get age
+
+		// get age
 		Optional<AppRegistrationEntity> opt3 = apprepo.findById(appId);
-		if(opt3.isPresent()) {
+		if (opt3.isPresent()) {
 			AppRegistrationEntity entity = opt3.get();
 			LocalDate dob = entity.getDob();
 			citizenName = entity.getFullName();
-			age=Period.between(LocalDate.now(), dob).getYears();
+			age = Period.between(LocalDate.now(), dob).getYears();
 		}
-		
-		EligibilityDetailsOutput elgiout=appyPlanConditions(caseNo, planName,age);
+
+		EligibilityDetailsOutput elgiout = appyPlanConditions(caseNo, planName, age);
 		elgiout.setHolderName(citizenName);
-		EligibilityDetailsEntity entity=new EligibilityDetailsEntity();
-		BeanUtils.copyProperties( elgiout,entity);
+		EligibilityDetailsEntity entity = new EligibilityDetailsEntity();
+		BeanUtils.copyProperties(elgiout, entity);
 		elgirepo.save(entity);
-		
-		
-		CorrespondenceEntity centity=new CorrespondenceEntity();
+
+		CmnEntity centity = new CmnEntity();
 		centity.setCaseNo(caseNo);
 		centity.setComnStatus("pending");
 		cmrepo.save(centity);
-		
+
 		return elgiout;
 	}
 
 	// use a private method to determine eligibility criteria
 
-	private EligibilityDetailsOutput appyPlanConditions(Integer caseNo, String planName,Integer age) {
+	private EligibilityDetailsOutput appyPlanConditions(Integer caseNo, String planName, Integer age) {
 		EligibilityDetailsOutput elgioutput = new EligibilityDetailsOutput();
 		elgioutput.setPlanName(planName);
 
@@ -147,27 +144,26 @@ public class EligibilityDeterminationServiceImpl implements IEligibilityDetermin
 				elgioutput.setPlanStatus("denied");
 				elgioutput.setDenialReason("high income");
 			}
-		}else if(planName.equalsIgnoreCase("MEDCARE")) {
-			if(age>65) {
+		} else if (planName.equalsIgnoreCase("MEDCARE")) {
+			if (age > 65) {
 				elgioutput.setPlanStatus("approved");
 				elgioutput.setBenefitAmount(3000.0);
-			}else {
+			} else {
 				elgioutput.setPlanStatus("denied");
 				elgioutput.setDenialReason("not satisfying the eligibility conditions");
 			}
-			
-			
-		}else if(planName.equalsIgnoreCase("SUPPORT UNEMPLOYED")) {
-			
+
+		} else if (planName.equalsIgnoreCase("SUPPORT UNEMPLOYED")) {
+
 			DC_EducationEntity edentity = edrepo.findByCaseNo(caseNo);
-			int passoutYear=edentity.getPassOutYear();
-			if(empIncome==0 && passoutYear<LocalDate.now().getYear()) {
+			int passoutYear = edentity.getPassOutYear();
+			if (empIncome == 0 && passoutYear < LocalDate.now().getYear()) {
 				elgioutput.setPlanStatus("approved");
 				elgioutput.setBenefitAmount(2000.0);
-			}else {
+			} else {
 				elgioutput.setPlanStatus("denied");
 				elgioutput.setDenialReason("not satisfying the eligibility conditions");
-				
+
 			}
 		}
 		// if plan approved then validate the plan for two years
