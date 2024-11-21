@@ -8,5 +8,7 @@ import com.nt.entity.CmnEntity;
 
 public interface IComnRepository extends JpaRepository<CmnEntity, Integer> {
 
-	
+	public List<CmnEntity> findByComnStatus(String status);
+
+	public CmnEntity findByCaseNo(Integer caseNo);
 }
